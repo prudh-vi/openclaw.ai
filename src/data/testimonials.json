@@ -173,5 +173,10 @@
     "quote": "clawdbot is incredibly well-made, doesn't feel like slop, has elegant docs, and serves us even better than poke",
     "author": "atzydev",
     "url": "https://x.com/atzydev/status/2009117280848970208"
+  },
+  {
+    "quote": "good lord @clawdbot is so good. within an hour of spinning it up, i had it monitoring my full integration and release workflow, watching the gh action, npm publish, etc end to end and alerting me when done!",
+    "author": "shuv1337",
+    "url": "https://x.com/shuv1337/status/2008118863205113899"
   }
 ]
