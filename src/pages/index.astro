@@ -16,6 +16,13 @@ const mixed2 = [...strong2.slice(0, 5), extra2[0], ...strong2.slice(5, 10), extr
 // Duplicate for seamless loop
 const row1 = [...mixed1, ...mixed1];
 const row2 = [...mixed2, ...mixed2];
+
+// Calculate animation duration based on content length for constant speed
+// Each card is ~336px (320px min-width + 16px gap), speed = 50px/s
+const pixelsPerItem = 336;
+const pixelsPerSecond = 50;
+const duration1 = (row1.length / 2 * pixelsPerItem) / pixelsPerSecond;
+const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
 ---
 
 <Layout title="Clawdbot — Personal AI Assistant">
@@ -185,7 +192,7 @@ const row2 = [...mixed2, ...mixed2];
         <span class="claw-accent">⟩</span> What People Say
       </h2>
       <div class="testimonials-track">
-        <div class="testimonials-row row-1">
+        <div class="testimonials-row row-1" style={`--duration: ${duration1}s`}>
           {row1.map((t) => (
             <a href={t.url} target="_blank" rel="noopener" class="testimonial-card">
               <img
@@ -201,7 +208,7 @@ const row2 = [...mixed2, ...mixed2];
             </a>
           ))}
         </div>
-        <div class="testimonials-row row-2">
+        <div class="testimonials-row row-2" style={`--duration: ${duration2}s`}>
           {row2.map((t) => (
             <a href={t.url} target="_blank" rel="noopener" class="testimonial-card">
               <img
@@ -684,11 +691,11 @@ const row2 = [...mixed2, ...mixed2];
   }
 
   .row-1 {
-    animation: scroll-left 80s linear infinite;
+    animation: scroll-left var(--duration, 80s) linear infinite;
   }
 
   .row-2 {
-    animation: scroll-right 90s linear infinite;
+    animation: scroll-right var(--duration, 90s) linear infinite;
   }
 
   @keyframes scroll-left {
