@@ -92,9 +92,12 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
 
     <!-- Testimonials (moved up for social proof) -->
     <section class="testimonials">
-      <h2 class="section-title">
-        <span class="claw-accent">⟩</span> What People Say
-      </h2>
+      <div class="section-header">
+        <h2 class="section-title">
+          <span class="claw-accent">⟩</span> What People Say
+        </h2>
+        <a href="/shoutouts" class="section-link">View all →</a>
+      </div>
       <div class="testimonials-track">
         <div class="testimonials-row row-1" style={`--duration: ${duration1}s`}>
           {row1.map((t) => (
@@ -419,7 +422,11 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
           </span>
         ))}
       </div>
-      <a href="/integrations" class="integrations-link">View all 50+ integrations →</a>
+      <div class="integrations-links">
+        <a href="/integrations" class="integrations-link">View all 50+ integrations →</a>
+        <span class="link-separator">·</span>
+        <a href="https://docs.clawd.bot/start/showcase" class="integrations-link" target="_blank" rel="noopener">See what people built →</a>
+      </div>
     </section>
 
     <!-- CTA Grid -->
@@ -459,33 +466,6 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
         <span class="cta-sub">Download skills</span>
       </a>
     </nav>
-
-    <!-- Explore More Banner -->
-    <section class="explore-banner">
-      <div class="explore-links">
-        <a href="/integrations" class="explore-link">
-          <svg class="explore-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="12" cy="12" r="3"/><path d="M12 1v6m0 6v6m5.2-13.2l-4.2 4.2m0 6l4.2 4.2M23 12h-6m-6 0H1m18.2-5.2l-4.2 4.2m0 6l4.2 4.2"/>
-          </svg>
-          <span class="explore-label">Integrations</span>
-          <span class="explore-desc">50+ apps & services</span>
-        </a>
-        <a href="/shoutouts" class="explore-link">
-          <svg class="explore-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-          </svg>
-          <span class="explore-label">Shoutouts</span>
-          <span class="explore-desc">Community love</span>
-        </a>
-        <a href="https://docs.clawd.bot/start/showcase" target="_blank" rel="noopener" class="explore-link">
-          <svg class="explore-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/>
-          </svg>
-          <span class="explore-label">Showcase</span>
-          <span class="explore-desc">Impressive builds</span>
-        </a>
-      </div>
-    </section>
 
     <!-- Footer -->
     <footer class="footer">
@@ -858,9 +838,15 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
     box-shadow: 0 8px 24px color-mix(in srgb, var(--coral-bright) 20%, transparent);
   }
 
+  .integrations-links {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 12px;
+    flex-wrap: wrap;
+  }
+
   .integrations-link {
-    display: block;
-    text-align: center;
     color: var(--coral-bright);
     text-decoration: none;
     font-size: 0.9rem;
@@ -872,20 +858,44 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
     color: var(--cyan-bright);
   }
 
+  .link-separator {
+    color: var(--text-muted);
+    font-size: 0.9rem;
+  }
+
   /* Quick Start */
   .quickstart {
     margin-bottom: 56px;
     animation: fadeInUp 0.8s ease-out 0.6s both;
   }
 
+  .section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+  }
+
   .section-title {
     font-family: var(--font-display);
     font-size: 1.4rem;
     font-weight: 600;
-    margin-bottom: 20px;
+    margin-bottom: 0;
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .section-link {
+    font-size: 0.9rem;
+    color: var(--coral-bright);
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease;
+  }
+
+  .section-link:hover {
+    color: var(--cyan-bright);
   }
 
   .claw-accent {
@@ -1112,8 +1122,8 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
     padding: 0 24px;
   }
 
-  .testimonials .section-title {
-    padding-left: 24px;
+  .testimonials .section-header {
+    padding: 0 24px;
   }
 
   .testimonials-track {
@@ -1223,59 +1233,6 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
     color: var(--coral-bright);
   }
 
-  /* Explore Banner */
-  .explore-banner {
-    margin: 56px 0 40px 0;
-    animation: fadeInUp 0.8s ease-out 0.8s both;
-  }
-
-  .explore-links {
-    display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 20px;
-  }
-
-  .explore-link {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    text-align: center;
-    padding: 32px 24px;
-    border-radius: 16px;
-    border: 1px solid var(--border-subtle);
-    background: rgba(10, 15, 26, 0.6);
-    backdrop-filter: blur(12px);
-    text-decoration: none;
-    transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
-  }
-
-  .explore-link:hover {
-    transform: translateY(-4px);
-    border-color: var(--coral-bright);
-    box-shadow: 0 12px 40px color-mix(in srgb, var(--coral-bright) 20%, transparent);
-  }
-
-  .explore-icon {
-    width: 40px;
-    height: 40px;
-    color: var(--coral-bright);
-    margin-bottom: 16px;
-    stroke-width: 2;
-  }
-
-  .explore-label {
-    font-family: var(--font-display);
-    font-size: 1.2rem;
-    font-weight: 600;
-    color: var(--text-primary);
-    margin-bottom: 8px;
-  }
-
-  .explore-desc {
-    font-size: 0.9rem;
-    color: var(--text-muted);
-  }
-
   /* Responsive */
   @media (max-width: 480px) {
     .container {
@@ -1323,10 +1280,6 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
 
     .testimonial-quote {
       font-size: 0.85rem;
-    }
-
-    .explore-links {
-      grid-template-columns: 1fr;
     }
   }
 </style>
