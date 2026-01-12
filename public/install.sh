@@ -139,6 +139,12 @@ pick_tagline() {
 TAGLINE=$(pick_tagline)
 
 NO_ONBOARD=${CLAWDBOT_NO_ONBOARD:-0}
+NO_PROMPT=${CLAWDBOT_NO_PROMPT:-0}
+DRY_RUN=${CLAWDBOT_DRY_RUN:-0}
+INSTALL_METHOD=${CLAWDBOT_INSTALL_METHOD:-}
+GIT_DIR_DEFAULT="${HOME}/clawdbot"
+GIT_DIR=${CLAWDBOT_GIT_DIR:-$GIT_DIR_DEFAULT}
+GIT_UPDATE=${CLAWDBOT_GIT_UPDATE:-1}
 
 parse_args() {
     while [[ $# -gt 0 ]]; do
@@ -151,11 +157,75 @@ parse_args() {
                 NO_ONBOARD=0
                 shift
                 ;;
+            --dry-run)
+                DRY_RUN=1
+                shift
+                ;;
+            --no-prompt)
+                NO_PROMPT=1
+                shift
+                ;;
+            --install-method|--method)
+                INSTALL_METHOD="$2"
+                shift 2
+                ;;
+            --npm)
+                INSTALL_METHOD="npm"
+                shift
+                ;;
+            --git|--github)
+                INSTALL_METHOD="git"
+                shift
+                ;;
+            --git-dir|--dir)
+                GIT_DIR="$2"
+                shift 2
+                ;;
+            --no-git-update)
+                GIT_UPDATE=0
+                shift
+                ;;
             *)
                 shift
                 ;;
         esac
     done
+}
+
+is_promptable() {
+    if [[ "$NO_PROMPT" == "1" ]]; then
+        return 1
+    fi
+    if [[ -r /dev/tty && -w /dev/tty ]]; then
+        return 0
+    fi
+    return 1
+}
+
+prompt_choice() {
+    local prompt="$1"
+    local answer=""
+    if ! is_promptable; then
+        return 1
+    fi
+    echo -e "$prompt" > /dev/tty
+    read -r answer < /dev/tty || true
+    echo "$answer"
+}
+
+detect_clawdbot_checkout() {
+    local dir="$1"
+    if [[ ! -f "$dir/package.json" ]]; then
+        return 1
+    fi
+    if [[ ! -f "$dir/pnpm-workspace.yaml" ]]; then
+        return 1
+    fi
+    if ! grep -q '"name"[[:space:]]*:[[:space:]]*"clawdbot"' "$dir/package.json" 2>/dev/null; then
+        return 1
+    fi
+    echo "$dir"
+    return 0
 }
 
 echo -e "${ACCENT}${BOLD}"
@@ -315,6 +385,82 @@ check_existing_clawdbot() {
     return 1
 }
 
+ensure_pnpm() {
+    if command -v pnpm &> /dev/null; then
+        return 0
+    fi
+
+    if command -v corepack &> /dev/null; then
+        echo -e "${WARN}→${NC} Installing pnpm via Corepack..."
+        corepack enable >/dev/null 2>&1 || true
+        corepack prepare pnpm@10 --activate
+        echo -e "${SUCCESS}✓${NC} pnpm installed"
+        return 0
+    fi
+
+    echo -e "${WARN}→${NC} Installing pnpm via npm..."
+    fix_npm_permissions
+    npm install -g pnpm@10
+    echo -e "${SUCCESS}✓${NC} pnpm installed"
+    return 0
+}
+
+ensure_user_local_bin_on_path() {
+    local target="$HOME/.local/bin"
+    mkdir -p "$target"
+
+    export PATH="$target:$PATH"
+
+    local path_line='export PATH="$HOME/.local/bin:$PATH"'
+    for rc in "$HOME/.bashrc" "$HOME/.zshrc"; do
+        if [[ -f "$rc" ]] && ! grep -q ".local/bin" "$rc"; then
+            echo "$path_line" >> "$rc"
+        fi
+    done
+}
+
+install_clawdbot_from_git() {
+    local repo_dir="$1"
+    local repo_url="https://github.com/clawdbot/clawdbot.git"
+
+    echo -e "${WARN}→${NC} Installing Clawdbot from GitHub (${repo_url})..."
+
+    if ! check_git; then
+        install_git
+    fi
+
+    ensure_pnpm
+
+    if [[ ! -d "$repo_dir" ]]; then
+        git clone "$repo_url" "$repo_dir"
+    fi
+
+    if [[ "$GIT_UPDATE" == "1" ]]; then
+        if [[ -z "$(git -C "$repo_dir" status --porcelain 2>/dev/null || true)" ]]; then
+            git -C "$repo_dir" pull --rebase || true
+        else
+            echo -e "${WARN}→${NC} Repo is dirty; skipping git pull"
+        fi
+    fi
+
+    pnpm -C "$repo_dir" install
+
+    if ! pnpm -C "$repo_dir" ui:build; then
+        echo -e "${WARN}→${NC} UI build failed; continuing (CLI may still work)"
+    fi
+    pnpm -C "$repo_dir" build
+
+    ensure_user_local_bin_on_path
+
+    cat > "$HOME/.local/bin/clawdbot" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+exec node "${repo_dir}/dist/entry.js" "\$@"
+EOF
+    chmod +x "$HOME/.local/bin/clawdbot"
+    echo -e "${SUCCESS}✓${NC} Clawdbot wrapper installed to \$HOME/.local/bin/clawdbot"
+}
+
 # Install Clawdbot
 install_clawdbot() {
     echo -e "${WARN}→${NC} Installing Clawdbot..."
@@ -346,6 +492,55 @@ resolve_clawdbot_version() {
 
 # Main installation flow
 main() {
+    local detected_checkout=""
+    detected_checkout="$(detect_clawdbot_checkout "$PWD" || true)"
+
+    if [[ -z "$INSTALL_METHOD" && -n "$detected_checkout" ]]; then
+        local choice=""
+        choice="$(prompt_choice "$(cat <<EOF
+${WARN}→${NC} Detected a Clawdbot source checkout in: ${INFO}${detected_checkout}${NC}
+Choose install method:
+  1) Update this checkout (git) and use it
+  2) Install global via npm (migrate away from git)
+Enter 1 or 2:
+EOF
+)" || true)"
+
+        case "$choice" in
+            1) INSTALL_METHOD="git" ;;
+            2) INSTALL_METHOD="npm" ;;
+            *)
+                echo -e "${ERROR}Error: no install method selected.${NC}"
+                echo "Re-run with: --install-method git|npm (or set CLAWDBOT_INSTALL_METHOD)."
+                exit 2
+                ;;
+        esac
+    fi
+
+    if [[ -z "$INSTALL_METHOD" ]]; then
+        INSTALL_METHOD="npm"
+    fi
+
+    if [[ "$INSTALL_METHOD" != "npm" && "$INSTALL_METHOD" != "git" ]]; then
+        echo -e "${ERROR}Error: invalid --install-method: ${INSTALL_METHOD}${NC}"
+        echo "Use: --install-method npm|git"
+        exit 2
+    fi
+
+    if [[ "$DRY_RUN" == "1" ]]; then
+        echo -e "${SUCCESS}✓${NC} Dry run"
+        echo -e "${SUCCESS}✓${NC} Install method: ${INSTALL_METHOD}"
+        if [[ -n "$detected_checkout" ]]; then
+            echo -e "${SUCCESS}✓${NC} Detected checkout: ${detected_checkout}"
+        fi
+        if [[ "$INSTALL_METHOD" == "git" ]]; then
+            echo -e "${SUCCESS}✓${NC} Git dir: ${GIT_DIR}"
+            echo -e "${SUCCESS}✓${NC} Git update: ${GIT_UPDATE}"
+        fi
+        echo -e "${MUTED}Dry run complete (no changes made).${NC}"
+        return 0
+    fi
+
     # Check for existing installation
     local is_upgrade=false
     if check_existing_clawdbot; then
@@ -360,16 +555,24 @@ main() {
         install_node
     fi
 
-    # Step 3: Git (required for npm installs that may fetch from git or apply patches)
-    if ! check_git; then
-        install_git
+    if [[ "$INSTALL_METHOD" == "git" ]]; then
+        local repo_dir="$GIT_DIR"
+        if [[ -n "$detected_checkout" ]]; then
+            repo_dir="$detected_checkout"
+        fi
+        install_clawdbot_from_git "$repo_dir"
+    else
+        # Step 3: Git (required for npm installs that may fetch from git or apply patches)
+        if ! check_git; then
+            install_git
+        fi
+
+        # Step 4: npm permissions (Linux)
+        fix_npm_permissions
+
+        # Step 5: Clawdbot
+        install_clawdbot
     fi
-
-    # Step 4: npm permissions (Linux)
-    fix_npm_permissions
-
-    # Step 5: Clawdbot
-    install_clawdbot
 
     # Step 6: Run doctor for migrations if upgrading
     if [[ "$is_upgrade" == "true" ]]; then
@@ -387,7 +590,10 @@ main() {
     fi
     echo ""
 
-    if [[ "$is_upgrade" == "true" ]]; then
+    if [[ "$INSTALL_METHOD" == "git" ]]; then
+        echo -e "Installed from source. To update later, run: ${INFO}clawdbot update --restart${NC}"
+        echo -e "Switch to global install later: ${INFO}curl -fsSL https://clawd.bot/install.sh | bash -s -- --install-method npm${NC}"
+    elif [[ "$is_upgrade" == "true" ]]; then
         echo -e "Upgrade complete. Run ${INFO}clawdbot doctor${NC} to check for additional migrations."
     else
         if [[ "$NO_ONBOARD" == "1" ]]; then

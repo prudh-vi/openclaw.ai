@@ -44,4 +44,30 @@ fi
 echo "==> Sanity: CLI runs"
 clawdbot --help >/dev/null
 
+echo "==> Installer: detect source checkout (dry-run)"
+TMP_REPO="/tmp/clawdbot-repo-detect"
+rm -rf "$TMP_REPO"
+mkdir -p "$TMP_REPO"
+cat > "$TMP_REPO/package.json" <<'EOF'
+{"name":"clawdbot"}
+EOF
+touch "$TMP_REPO/pnpm-workspace.yaml"
+
+(
+  cd "$TMP_REPO"
+  set +e
+  curl -fsSL "$INSTALL_URL" | bash -s -- --dry-run --no-onboard --no-prompt >/tmp/repo-detect.out 2>&1
+  code=$?
+  set -e
+  if [[ "$code" -eq 0 ]]; then
+    echo "ERROR: expected repo-detect dry-run to fail without --install-method" >&2
+    cat /tmp/repo-detect.out >&2
+    exit 1
+  fi
+)
+
+echo "==> Installer: dry-run (explicit methods)"
+curl -fsSL "$INSTALL_URL" | bash -s -- --dry-run --no-onboard --install-method npm --no-prompt >/dev/null
+curl -fsSL "$INSTALL_URL" | bash -s -- --dry-run --no-onboard --install-method git --git-dir /tmp/clawdbot-src --no-prompt >/dev/null
+
 echo "OK"
