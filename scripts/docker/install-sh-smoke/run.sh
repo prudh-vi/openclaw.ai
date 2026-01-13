@@ -11,20 +11,28 @@ else
 fi
 
 echo "==> Resolve npm versions"
-LATEST_VERSION="$(npm view clawdbot version)"
-PREVIOUS_VERSION="$(node - <<'NODE'
+LATEST_VERSION="$(npm view clawdbot dist-tags.latest)"
+NEXT_VERSION="$(npm view clawdbot dist-tags.next)"
+PREVIOUS_VERSION="$(NEXT_VERSION="$NEXT_VERSION" node - <<'NODE'
 const { execSync } = require("node:child_process");
 
 const versions = JSON.parse(execSync("npm view clawdbot versions --json", { encoding: "utf8" }));
 if (!Array.isArray(versions) || versions.length === 0) {
   process.exit(1);
 }
-const previous = versions.length >= 2 ? versions[versions.length - 2] : versions[0];
+
+const next = (process.env.NEXT_VERSION || "").trim();
+if (!next) {
+  process.exit(1);
+}
+
+const idx = versions.indexOf(next);
+const previous = idx > 0 ? versions[idx - 1] : (versions.length >= 2 ? versions[versions.length - 2] : versions[0]);
 process.stdout.write(previous);
 NODE
 )"
 
-echo "latest=$LATEST_VERSION previous=$PREVIOUS_VERSION"
+echo "latest=$LATEST_VERSION next=$NEXT_VERSION previous=$PREVIOUS_VERSION"
 
 echo "==> Installer: --help"
 curl -fsSL "$INSTALL_URL" | bash -s -- --help >/tmp/install-help.txt
@@ -38,10 +46,10 @@ curl -fsSL "$INSTALL_URL" | bash -s -- --no-onboard
 
 echo "==> Verify installed version"
 INSTALLED_VERSION="$(clawdbot --version 2>/dev/null | head -n 1 | tr -d '\r')"
-echo "installed=$INSTALLED_VERSION expected=$LATEST_VERSION"
+echo "installed=$INSTALLED_VERSION latest=$LATEST_VERSION next=$NEXT_VERSION"
 
-if [[ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]]; then
-  echo "ERROR: expected clawdbot@$LATEST_VERSION, got clawdbot@$INSTALLED_VERSION" >&2
+if [[ "$INSTALLED_VERSION" != "$LATEST_VERSION" && "$INSTALLED_VERSION" != "$NEXT_VERSION" ]]; then
+  echo "ERROR: expected clawdbot@$LATEST_VERSION (latest) or @$NEXT_VERSION (next), got @$INSTALLED_VERSION" >&2
   exit 1
 fi
 

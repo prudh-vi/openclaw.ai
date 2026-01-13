@@ -143,6 +143,7 @@ NO_ONBOARD=${CLAWDBOT_NO_ONBOARD:-0}
 NO_PROMPT=${CLAWDBOT_NO_PROMPT:-0}
 DRY_RUN=${CLAWDBOT_DRY_RUN:-0}
 INSTALL_METHOD=${CLAWDBOT_INSTALL_METHOD:-}
+CLAWDBOT_VERSION=${CLAWDBOT_VERSION:-latest}
 GIT_DIR_DEFAULT="${HOME}/clawdbot"
 GIT_DIR=${CLAWDBOT_GIT_DIR:-$GIT_DIR_DEFAULT}
 GIT_UPDATE=${CLAWDBOT_GIT_UPDATE:-1}
@@ -160,6 +161,7 @@ Options:
   --install-method, --method npm|git   Install via npm (default) or from a git checkout
   --npm                               Shortcut for --install-method npm
   --git, --github                     Shortcut for --install-method git
+  --version <version|dist-tag>         npm install: version (default: latest)
   --git-dir, --dir <path>             Checkout directory (default: ~/clawdbot)
   --no-git-update                      Skip git pull for existing checkout
   --no-onboard                          Skip onboarding (non-interactive)
@@ -169,6 +171,7 @@ Options:
 
 Environment variables:
   CLAWDBOT_INSTALL_METHOD=git|npm
+  CLAWDBOT_VERSION=latest|next|<semver>
   CLAWDBOT_GIT_DIR=...
   CLAWDBOT_GIT_UPDATE=0|1
   CLAWDBOT_NO_PROMPT=1
@@ -208,6 +211,10 @@ parse_args() {
                 ;;
             --install-method|--method)
                 INSTALL_METHOD="$2"
+                shift 2
+                ;;
+            --version)
+                CLAWDBOT_VERSION="$2"
                 shift 2
                 ;;
             --npm)
@@ -511,7 +518,20 @@ install_clawdbot() {
     if [[ "$SHARP_IGNORE_GLOBAL_LIBVIPS" == "1" ]]; then
         echo -e "${INFO}i${NC} Using SHARP_IGNORE_GLOBAL_LIBVIPS=1 (avoids sharp source builds against global libvips)"
     fi
-    SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" npm install -g clawdbot@latest
+
+    if [[ -z "${CLAWDBOT_VERSION}" ]]; then
+        CLAWDBOT_VERSION="latest"
+    fi
+
+    if [[ "${CLAWDBOT_VERSION}" == "latest" ]]; then
+        if ! SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" npm install -g "clawdbot@latest"; then
+            echo -e "${WARN}→${NC} npm install clawdbot@latest failed; retrying clawdbot@next"
+            SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" npm install -g "clawdbot@next"
+        fi
+    else
+        SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" npm install -g "clawdbot@${CLAWDBOT_VERSION}"
+    fi
+
     echo -e "${SUCCESS}✓${NC} Clawdbot installed"
 }
 

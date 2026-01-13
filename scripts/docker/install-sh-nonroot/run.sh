@@ -43,7 +43,8 @@ echo "==> Verify git installed"
 command -v git >/dev/null
 
 echo "==> Verify clawdbot installed"
-LATEST_VERSION="$(npm view clawdbot version)"
+LATEST_VERSION="$(npm view clawdbot dist-tags.latest)"
+NEXT_VERSION="$(npm view clawdbot dist-tags.next)"
 CMD_PATH="$(command -v clawdbot || true)"
 if [[ -z "$CMD_PATH" && -x "$HOME/.npm-global/bin/clawdbot" ]]; then
   CMD_PATH="$HOME/.npm-global/bin/clawdbot"
@@ -54,9 +55,9 @@ if [[ -z "$CMD_PATH" ]]; then
 fi
 INSTALLED_VERSION="$("$CMD_PATH" --version 2>/dev/null | head -n 1 | tr -d '\r')"
 
-echo "installed=$INSTALLED_VERSION expected=$LATEST_VERSION"
-if [[ "$INSTALLED_VERSION" != "$LATEST_VERSION" ]]; then
-  echo "ERROR: expected clawdbot@$LATEST_VERSION, got @$INSTALLED_VERSION" >&2
+echo "installed=$INSTALLED_VERSION latest=$LATEST_VERSION next=$NEXT_VERSION"
+if [[ "$INSTALLED_VERSION" != "$LATEST_VERSION" && "$INSTALLED_VERSION" != "$NEXT_VERSION" ]]; then
+  echo "ERROR: expected clawdbot@$LATEST_VERSION (latest) or @$NEXT_VERSION (next), got @$INSTALLED_VERSION" >&2
   exit 1
 fi
 

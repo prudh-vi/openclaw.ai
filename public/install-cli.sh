@@ -266,12 +266,24 @@ fix_npm_prefix_if_needed() {
 }
 
 install_clawdbot() {
-  emit_json "{\"event\":\"step\",\"name\":\"clawdbot\",\"status\":\"start\",\"version\":\"${CLAWDBOT_VERSION}\"}"
-  log "Installing Clawdbot (${CLAWDBOT_VERSION})..."
+  local requested="${CLAWDBOT_VERSION:-latest}"
+  emit_json "{\"event\":\"step\",\"name\":\"clawdbot\",\"status\":\"start\",\"version\":\"${requested}\"}"
+  log "Installing Clawdbot (${requested})..."
   if [[ "$SET_NPM_PREFIX" -eq 1 ]]; then
     fix_npm_prefix_if_needed
   fi
-  SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" "$(npm_bin)" install -g --prefix "$PREFIX" "clawdbot@${CLAWDBOT_VERSION}"
+
+  if [[ "${requested}" == "latest" ]]; then
+    if ! SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" "$(npm_bin)" install -g --prefix "$PREFIX" "clawdbot@latest"; then
+      log "npm install clawdbot@latest failed; retrying clawdbot@next"
+      emit_json "{\"event\":\"step\",\"name\":\"clawdbot\",\"status\":\"retry\",\"version\":\"next\"}"
+      SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" "$(npm_bin)" install -g --prefix "$PREFIX" "clawdbot@next"
+      requested="next"
+    fi
+  else
+    SHARP_IGNORE_GLOBAL_LIBVIPS="$SHARP_IGNORE_GLOBAL_LIBVIPS" "$(npm_bin)" install -g --prefix "$PREFIX" "clawdbot@${requested}"
+  fi
+
   rm -f "${PREFIX}/bin/clawdbot"
   cat > "${PREFIX}/bin/clawdbot" <<EOF
 #!/usr/bin/env bash
@@ -279,7 +291,7 @@ set -euo pipefail
 exec "${PREFIX}/tools/node/bin/node" "${PREFIX}/lib/node_modules/clawdbot/dist/entry.js" "\$@"
 EOF
   chmod +x "${PREFIX}/bin/clawdbot"
-  emit_json "{\"event\":\"step\",\"name\":\"clawdbot\",\"status\":\"ok\"}"
+  emit_json "{\"event\":\"step\",\"name\":\"clawdbot\",\"status\":\"ok\",\"version\":\"${requested}\"}"
 }
 
 resolve_clawdbot_version() {
