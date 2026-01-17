@@ -147,10 +147,10 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
           <span class="code-dot"></span>
           <span class="code-dot"></span>
           <div class="mode-switch">
-            <button class="mode-btn active" data-mode="oneliner">Just Works</button>
-            <button class="mode-btn" data-mode="quick">npm install</button>
+            <button class="mode-btn active" data-mode="oneliner">One-liner</button>
+            <button class="mode-btn" data-mode="quick">npm</button>
             <button class="mode-btn" data-mode="hackable">Hackable</button>
-            <button class="mode-btn" data-mode="macos">macOS App</button>
+            <button class="mode-btn" data-mode="macos">macOS</button>
           </div>
           <div class="pm-switch" id="pm-switch" style="display: none;">
             <button class="pm-btn active" data-pm="npm">npm</button>
@@ -168,12 +168,18 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
             <button class="os-btn active" data-os="unix">macOS/Linux</button>
             <button class="os-btn" data-os="windows">Windows</button>
           </div>
+          <div class="beta-switch" id="beta-switch">
+            <button class="beta-btn" id="beta-btn" data-beta="false">
+              <span class="beta-label">β</span>
+              <span class="beta-text">Beta</span>
+            </button>
+          </div>
         </div>
         <div id="code-oneliner" class="code-content">
-          <div class="code-line comment"># Works everywhere. Installs everything. You're welcome. 🦞</div>
+          <div class="code-line comment" id="oneliner-comment"># Works everywhere. Installs everything. You're welcome. 🦞</div>
           <div class="code-line cmd">
             <span class="code-prompt">$</span>
-            <span class="os-cmd">curl -fsSL --proto '=https' --tlsv1.2 https://clawd.bot/install.sh | bash</span>
+            <span class="os-cmd">curl -fsSL https://clawd.bot/install.sh | bash</span>
             <button class="copy-line-btn" data-cmd="oneliner" title="Copy">
               <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
               <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
@@ -181,7 +187,7 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
           </div>
         </div>
         <div id="code-quick" class="code-content" style="display: none;">
-          <div class="code-line comment"># Install Clawdbot</div>
+          <div class="code-line comment" id="quick-comment-install"># Install Clawdbot</div>
           <div class="code-line cmd">
             <span class="code-prompt">$</span>
             <span class="pm-install">npm i -g clawdbot</span>
@@ -190,7 +196,7 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
               <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
             </button>
           </div>
-          <div class="code-line comment"># Meet your lobster</div>
+          <div class="code-line comment" id="quick-comment-onboard"># Meet your lobster</div>
           <div class="code-line cmd">
             <span class="code-prompt">$</span>
             <span>clawdbot onboard</span>
@@ -205,7 +211,7 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
             <div class="code-line comment"># For those who read source code for fun</div>
             <div class="code-line cmd">
               <span class="code-prompt">$</span>
-              <span class="os-cmd-hackable">curl -fsSL --proto '=https' --tlsv1.2 https://clawd.bot/install.sh | bash -s -- --install-method git</span>
+              <span class="os-cmd-hackable">curl -fsSL https://clawd.bot/install.sh | bash -s -- --install-method git</span>
               <button class="copy-line-btn" data-cmd="hackable-installer" title="Copy">
                 <svg class="copy-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
                 <svg class="check-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="display:none"><polyline points="20 6 9 17 4 12"/></svg>
@@ -271,7 +277,7 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
       };
 
       const osCmds = {
-        unix: "curl -fsSL --proto '=https' --tlsv1.2 https://clawd.bot/install.sh | bash",
+        unix: "curl -fsSL https://clawd.bot/install.sh | bash",
         windows: 'iwr -useb https://clawd.bot/install.ps1 | iex'
       };
 
@@ -283,6 +289,7 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
       let currentPm = 'npm';
       let currentMode = 'oneliner';
       let currentHackable = 'installer';
+      let currentBeta = false;
       let osPickerExpanded = false;
 
       // Auto-detect OS
@@ -300,23 +307,54 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
       const osIndicator = document.getElementById('os-indicator');
       const osDetected = document.getElementById('os-detected');
       const osChangeBtn = document.getElementById('os-change-btn');
+      const betaSwitch = document.getElementById('beta-switch');
+      const betaBtn = document.getElementById('beta-btn');
       const codeOneliner = document.getElementById('code-oneliner');
       const codeQuick = document.getElementById('code-quick');
       const codeHackable = document.getElementById('code-hackable');
       const codeMacos = document.getElementById('code-macos');
       const hackableInstallerContent = document.getElementById('hackable-installer-content');
       const hackablePnpmContent = document.getElementById('hackable-pnpm-content');
+      const onelinerComment = document.getElementById('oneliner-comment');
+      const quickCommentInstall = document.getElementById('quick-comment-install');
+      const quickCommentOnboard = document.getElementById('quick-comment-onboard');
+
+      const comments = {
+        oneliner: {
+          stable: "# Works everywhere. Installs everything. You're welcome. 🦞",
+          beta: "# Living on the edge. Bugs are features you found first. 🦞"
+        },
+        quickInstall: {
+          stable: "# Install Clawdbot",
+          beta: "# Install Clawdbot (beta) — Fresh from the lab 🧪"
+        },
+        quickOnboard: {
+          stable: "# Meet your lobster",
+          beta: "# Meet your experimental lobster"
+        }
+      };
 
       function updateCommands() {
         // Update hackable mode commands
         document.querySelectorAll('.pm-cmd').forEach(cmd => cmd.textContent = currentPm);
-        // Update quick mode install command
-        document.querySelectorAll('.pm-install').forEach(cmd => cmd.textContent = installCmds[currentPm]);
-        // Update one-liner OS command
-        document.querySelectorAll('.os-cmd').forEach(cmd => cmd.textContent = osCmds[currentOs]);
+        // Update quick mode install command (with beta support)
+        const betaSuffix = currentBeta ? '@beta' : '';
+        const installCmd = currentPm === 'npm'
+          ? `npm i -g clawdbot${betaSuffix}`
+          : `pnpm add -g clawdbot${betaSuffix}`;
+        document.querySelectorAll('.pm-install').forEach(cmd => cmd.textContent = installCmd);
+        // Update one-liner OS command (with beta support)
+        const onelinerCmd = currentOs === 'unix'
+          ? (currentBeta
+              ? "curl -fsSL https://clawd.bot/install.sh | bash -s -- --beta"
+              : "curl -fsSL https://clawd.bot/install.sh | bash")
+          : (currentBeta
+              ? 'iwr -useb https://clawd.bot/install.ps1 | iex -args "--beta"'
+              : 'iwr -useb https://clawd.bot/install.ps1 | iex');
+        document.querySelectorAll('.os-cmd').forEach(cmd => cmd.textContent = onelinerCmd);
         // Update hackable OS command for installer mode
         const hackableOsCmd = currentOs === 'unix'
-          ? "curl -fsSL --proto '=https' --tlsv1.2 https://clawd.bot/install.sh | bash -s -- --install-method git"
+          ? "curl -fsSL https://clawd.bot/install.sh | bash -s -- --install-method git"
           : 'iwr -useb https://clawd.bot/install.ps1 | iex -args "--install-method git"';
         document.querySelectorAll('.os-cmd-hackable').forEach(cmd => cmd.textContent = hackableOsCmd);
         // Update OS indicator text
@@ -326,6 +364,14 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
           hackableInstallerContent.style.display = currentHackable === 'installer' ? 'block' : 'none';
           hackablePnpmContent.style.display = currentHackable === 'pnpm' ? 'block' : 'none';
         }
+        // Update beta button state
+        betaBtn.classList.toggle('active', currentBeta);
+        betaBtn.dataset.beta = currentBeta.toString();
+        // Update comment texts based on beta state
+        const mode = currentBeta ? 'beta' : 'stable';
+        onelinerComment.textContent = comments.oneliner[mode];
+        quickCommentInstall.textContent = comments.quickInstall[mode];
+        quickCommentOnboard.textContent = comments.quickOnboard[mode];
       }
 
       function updateVisibility() {
@@ -338,17 +384,26 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
         const showOsControls = currentMode === 'oneliner';
         const showPmControls = currentMode === 'quick';
         const showHackableControls = currentMode === 'hackable';
+        // Beta only applies to oneliner and npm modes (git always gets main branch)
+        const showBetaControls = currentMode === 'oneliner' || currentMode === 'quick';
 
         osIndicator.style.display = showOsControls && !osPickerExpanded ? 'flex' : 'none';
         osSwitch.style.display = showOsControls && osPickerExpanded ? 'flex' : 'none';
         pmSwitch.style.display = showPmControls ? 'flex' : 'none';
         hackableSwitch.style.display = showHackableControls ? 'flex' : 'none';
+        betaSwitch.style.display = showBetaControls ? 'flex' : 'none';
       }
 
       // OS change toggle
       osChangeBtn.addEventListener('click', () => {
         osPickerExpanded = true;
         updateVisibility();
+      });
+
+      // Beta toggle
+      betaBtn.addEventListener('click', () => {
+        currentBeta = !currentBeta;
+        updateCommands();
       });
 
       pmBtns.forEach(btn => {
@@ -398,12 +453,19 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
       // Copy button functionality
       const copyCommands = {
         'oneliner': () => currentOs === 'unix'
-          ? "curl -fsSL --proto '=https' --tlsv1.2 https://clawd.bot/install.sh | bash"
-          : 'iwr -useb https://clawd.bot/install.ps1 | iex',
-        'install': () => currentPm === 'npm' ? 'npm i -g clawdbot' : 'pnpm add -g clawdbot',
+          ? (currentBeta
+              ? "curl -fsSL https://clawd.bot/install.sh | bash -s -- --beta"
+              : "curl -fsSL https://clawd.bot/install.sh | bash")
+          : (currentBeta
+              ? 'iwr -useb https://clawd.bot/install.ps1 | iex -args "--beta"'
+              : 'iwr -useb https://clawd.bot/install.ps1 | iex'),
+        'install': () => {
+          const betaSuffix = currentBeta ? '@beta' : '';
+          return currentPm === 'npm' ? `npm i -g clawdbot${betaSuffix}` : `pnpm add -g clawdbot${betaSuffix}`;
+        },
         'onboard': () => 'clawdbot onboard',
         'hackable-installer': () => currentOs === 'unix'
-          ? "curl -fsSL --proto '=https' --tlsv1.2 https://clawd.bot/install.sh | bash -s -- --install-method git"
+          ? "curl -fsSL https://clawd.bot/install.sh | bash -s -- --install-method git"
           : 'iwr -useb https://clawd.bot/install.ps1 | iex -args "--install-method git"',
         'clone': () => 'git clone https://github.com/clawdbot/clawdbot.git',
         'build': () => 'cd clawdbot && pnpm install && pnpm run build',
@@ -1146,6 +1208,47 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
     font-weight: 600;
   }
 
+  /* Beta Switch */
+  .beta-switch {
+    margin-left: 8px;
+  }
+
+  .beta-btn {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: var(--font-mono);
+    font-size: 0.7rem;
+    padding: 4px 10px;
+    border: 1px solid var(--border-subtle);
+    border-radius: 4px;
+    background: transparent;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+
+  .beta-btn:hover {
+    border-color: var(--cyan-bright);
+    color: var(--cyan-bright);
+  }
+
+  .beta-btn.active {
+    background: rgba(0, 229, 204, 0.15);
+    border-color: var(--cyan-bright);
+    color: var(--cyan-bright);
+  }
+
+  .beta-label {
+    font-weight: 700;
+    font-size: 0.8rem;
+  }
+
+  .beta-text {
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
   .pm-cmd,
   .pm-install {
     color: var(--cyan-bright);
@@ -1482,28 +1585,28 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
       gap: 8px;
     }
 
-    .mode-switch {
-      order: 1;
-      width: 100%;
-      justify-content: center;
-      margin-top: 8px;
-    }
-
     .code-dot {
       order: 0;
     }
 
-    .code-dot:nth-child(1) { order: 0; }
-    .code-dot:nth-child(2) { order: 0; }
-    .code-dot:nth-child(3) { order: 0; }
-
+    /* Contextual switches appear first (after dots) */
     .os-indicator,
     .os-switch,
-    .pm-switch {
+    .pm-switch,
+    .hackable-switch,
+    .beta-switch {
+      order: 1;
+      width: auto;
+      justify-content: center;
+      margin-left: 0;
+    }
+
+    /* Mode tabs appear last */
+    .mode-switch {
       order: 2;
       width: 100%;
       justify-content: center;
-      margin-left: 0;
+      margin-top: 4px;
     }
 
     .mode-btn {
