@@ -1,6 +1,6 @@
 # Clawdbot Installer for Windows
 # Usage: iwr -useb https://clawd.bot/install.ps1 | iex
-#        powershell -NoProfile -ExecutionPolicy Bypass -Command "& {$(iwr -useb https://clawd.bot/install.ps1)} -Tag beta"
+#        & ([scriptblock]::Create((iwr -useb https://clawd.bot/install.ps1))) -Tag beta
 
 param(
     [string]$Tag = "latest"

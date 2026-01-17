@@ -278,7 +278,7 @@ const duration2 = (row2.length / 2 * pixelsPerItem) / pixelsPerSecond;
       };
 
       const windowsCmd = 'iwr -useb https://clawd.bot/install.ps1 | iex';
-      const windowsBetaCmd = 'powershell -NoProfile -ExecutionPolicy Bypass -Command "& {$(iwr -useb https://clawd.bot/install.ps1)} -Tag beta"';
+      const windowsBetaCmd = '& ([scriptblock]::Create((iwr -useb https://clawd.bot/install.ps1))) -Tag beta';
       const osCmds = {
         unix: "curl -fsSL https://clawd.bot/install.sh | bash",
         windows: windowsCmd
