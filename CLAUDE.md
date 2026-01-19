@@ -8,6 +8,7 @@
 - This ensures consistent row heights in the 3-column CSS grid
 - Categories: SHORT (<200 chars), MED (200-400), LONG (>400)
 - Fields: `id`, `author`, `quote`, `category`, `likes`, `images?` (array of URLs)
+- **Important**: `showcase.astro` uses JSON order directly (no re-sorting) — maintain order in JSON
 
 ### Testimonials (`src/data/testimonials.json`)
 - Short praise quotes for the shoutouts page

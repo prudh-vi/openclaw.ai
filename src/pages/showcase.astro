@@ -2,8 +2,8 @@
 import Layout from '../layouts/Layout.astro';
 import showcaseData from '../data/showcase.json';
 
-// Sort by likes (most popular first)
-const sortedShowcase = [...showcaseData].sort((a, b) => b.likes - a.likes);
+// Use JSON order directly (pre-sorted into uniform rows: SHORT, MED, LONG groups)
+const sortedShowcase = showcaseData;
 
 const categoryLabels: Record<string, string> = {
   'power-user': '🚀 Power User',
@@ -64,6 +64,7 @@ const categoryLabels: Record<string, string> = {
       <p class="cta-desc">Share your Clawdbot creation with the community</p>
       <div class="cta-buttons">
         <a href="https://twitter.com/intent/tweet?text=Check%20out%20what%20I%20built%20with%20%40clawdbot%21" target="_blank" rel="noopener" class="cta-btn cta-primary">Share on X</a>
+        <a href="https://clawdhub.com" target="_blank" rel="noopener" class="cta-btn cta-hub">Browse Skills</a>
         <a href="https://discord.com/invite/clawd" target="_blank" rel="noopener" class="cta-btn cta-secondary">Join Discord</a>
       </div>
     </section>
@@ -321,6 +322,17 @@ const categoryLabels: Record<string, string> = {
   .cta-primary:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 30px rgba(255, 77, 77, 0.4);
+  }
+
+  .cta-hub {
+    background: rgba(0, 229, 204, 0.15);
+    border: 1px solid var(--cyan-bright);
+    color: var(--cyan-bright);
+  }
+
+  .cta-hub:hover {
+    background: rgba(0, 229, 204, 0.25);
+    transform: translateY(-2px);
   }
 
   .cta-secondary {

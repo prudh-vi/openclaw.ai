@@ -1,5 +1,29 @@
 [
   {
+    "id": "2012535486401671588",
+    "author": "dreetje",
+    "quote": "What I'm currently doing with @clawdbot:\n• Check my incoming mail, and remove spam\n• Check my incoming messages (through Beeper)\n• Order things for me\n• Send my reminders to Tana\n• Create issues on GitHub\n• Sync my Google Places\n• Reads my X bookmarks and discusses them with me\n• Generate a nice pdf summary of car conversations\n• Keep track of costs and split them after trips\n• Impersonate me in a group chat with friends (Hilarious)\n• It can call me and we can chat\n• Has its own 1Password vault it can read and write to\n\nAnd the beauty is, IT built all of this, just by chatting to it on the phone.",
+    "category": "automation",
+    "likes": 271
+  },
+  {
+    "id": "2012565160586625345",
+    "author": "danpeguine",
+    "quote": "Things my @clawdbot does for me:\n• Timeblocks tasks in my calendar based on importance\n• Scores tasks importance and urgency based on an algorithm we're developing together\n• Leads me through a weekly review based on meeting transcriptions & notes\n• Gives a morning daily brief: weather, weekly objectives, health stats, meetings agenda, key reminders, trending topics, stuff I should read based on current objectives, a relevant quote from my books\n• Notifies my wife and I about our son's upcoming school tests\n• Researches big projects and breaks them down to tasks\n• Researches people before meetings and creates briefing docs\n• Spawns background sub-agents to research business ideas\n• Manages the calendar for any conflicts autonomously\n• Creates invoices and summarizes work beautifully",
+    "category": "productivity",
+    "likes": 257
+  },
+  {
+    "id": "2009487467817336895",
+    "author": "davis7",
+    "quote": "This is the \"blue text bubbles\" moment of the ai race\n\nAll the cool shit u've been seeing about building crazy custom agents on top of a coding agent?\n\nclawdbot, btca, and the thousands more that will get built this year now HAVE to be built using anthropic's \"agent sdk\" package or else they'll be 100x more expensive\n\nand if they're built on anthropic's sdk guess what they can't do? switch to a better model from another provider when it releases",
+    "category": "developer",
+    "likes": 229,
+    "images": [
+      "https://pbs.twimg.com/media/G-MgZdaboAA22M5.jpg"
+    ]
+  },
+  {
     "id": "2012173452061360130",
     "author": "iannuttall",
     "quote": "I bought @clawdbot his first home 😍",
@@ -50,30 +74,6 @@
     "quote": "Less than 24 hours in: cleaned up Linear issues, wrote email follow-ups, opened 3 PRs, prospected new signups.\n\nSent thousands of messages in a loop to an innocent and unsuspecting person who happened to message me on WhatsApp.\nProspected our new signups for the day, now scheduled daily.",
     "category": "productivity",
     "likes": 92
-  },
-  {
-    "id": "2012535486401671588",
-    "author": "dreetje",
-    "quote": "What I'm currently doing with @clawdbot:\n• Check my incoming mail, and remove spam\n• Check my incoming messages (through Beeper)\n• Order things for me\n• Send my reminders to Tana\n• Create issues on GitHub\n• Sync my Google Places\n• Reads my X bookmarks and discusses them with me\n• Generate a nice pdf summary of car conversations\n• Keep track of costs and split them after trips\n• Impersonate me in a group chat with friends (Hilarious)\n• It can call me and we can chat\n• Has its own 1Password vault it can read and write to\n\nAnd the beauty is, IT built all of this, just by chatting to it on the phone.",
-    "category": "automation",
-    "likes": 271
-  },
-  {
-    "id": "2012565160586625345",
-    "author": "danpeguine",
-    "quote": "Things my @clawdbot does for me:\n• Timeblocks tasks in my calendar based on importance\n• Scores tasks importance and urgency based on an algorithm we're developing together\n• Leads me through a weekly review based on meeting transcriptions & notes\n• Gives a morning daily brief: weather, weekly objectives, health stats, meetings agenda, key reminders, trending topics, stuff I should read based on current objectives, a relevant quote from my books\n• Notifies my wife and I about our son's upcoming school tests\n• Researches big projects and breaks them down to tasks\n• Researches people before meetings and creates briefing docs\n• Spawns background sub-agents to research business ideas\n• Manages the calendar for any conflicts autonomously\n• Creates invoices and summarizes work beautifully",
-    "category": "productivity",
-    "likes": 257
-  },
-  {
-    "id": "2009487467817336895",
-    "author": "davis7",
-    "quote": "This is the \"blue text bubbles\" moment of the ai race\n\nAll the cool shit u've been seeing about building crazy custom agents on top of a coding agent?\n\nclawdbot, btca, and the thousands more that will get built this year now HAVE to be built using anthropic's \"agent sdk\" package or else they'll be 100x more expensive\n\nand if they're built on anthropic's sdk guess what they can't do? switch to a better model from another provider when it releases",
-    "category": "developer",
-    "likes": 229,
-    "images": [
-      "https://pbs.twimg.com/media/G-MgZdaboAA22M5.jpg"
-    ]
   },
   {
     "id": "2008994096736817624",
