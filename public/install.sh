@@ -570,6 +570,39 @@ fix_npm_permissions() {
     echo -e "${SUCCESS}✓${NC} npm configured for user installs"
 }
 
+resolve_clawdbot_bin() {
+    if command -v clawdbot &> /dev/null; then
+        command -v clawdbot
+        return 0
+    fi
+    local npm_bin=""
+    npm_bin="$(npm_global_bin_dir || true)"
+    if [[ -n "$npm_bin" && -x "${npm_bin}/clawdbot" ]]; then
+        echo "${npm_bin}/clawdbot"
+        return 0
+    fi
+    return 1
+}
+
+ensure_clawdbot_bin_link() {
+    local npm_root=""
+    npm_root="$(npm root -g 2>/dev/null || true)"
+    if [[ -z "$npm_root" || ! -d "$npm_root/clawdbot" ]]; then
+        return 1
+    fi
+    local npm_bin=""
+    npm_bin="$(npm_global_bin_dir || true)"
+    if [[ -z "$npm_bin" ]]; then
+        return 1
+    fi
+    mkdir -p "$npm_bin"
+    if [[ ! -x "${npm_bin}/clawdbot" ]]; then
+        ln -sf "$npm_root/clawdbot/dist/entry.js" "${npm_bin}/clawdbot"
+        echo -e "${WARN}→${NC} Installed clawdbot bin link at ${INFO}${npm_bin}/clawdbot${NC}"
+    fi
+    return 0
+}
+
 # Check for existing Clawdbot installation
 check_existing_clawdbot() {
     if [[ -n "$(type -P clawdbot 2>/dev/null || true)" ]]; then
@@ -830,15 +863,28 @@ install_clawdbot() {
     else
         echo -e "${WARN}→${NC} Installing Clawdbot (${INFO}${CLAWDBOT_VERSION}${NC})..."
     fi
+    local install_spec=""
+    if [[ "${CLAWDBOT_VERSION}" == "latest" ]]; then
+        install_spec="clawdbot@latest"
+    else
+        install_spec="clawdbot@${CLAWDBOT_VERSION}"
+    fi
+
+    if ! install_clawdbot_npm "${install_spec}"; then
+        echo -e "${WARN}→${NC} npm install failed; cleaning up and retrying..."
+        cleanup_npm_clawdbot_paths
+        install_clawdbot_npm "${install_spec}"
+    fi
 
     if [[ "${CLAWDBOT_VERSION}" == "latest" ]]; then
-        if ! install_clawdbot_npm "clawdbot@latest"; then
+        if ! resolve_clawdbot_bin &> /dev/null; then
             echo -e "${WARN}→${NC} npm install clawdbot@latest failed; retrying clawdbot@next"
+            cleanup_npm_clawdbot_paths
             install_clawdbot_npm "clawdbot@next"
         fi
-    else
-        install_clawdbot_npm "clawdbot@${CLAWDBOT_VERSION}"
     fi
+
+    ensure_clawdbot_bin_link || true
 
     echo -e "${SUCCESS}✓${NC} Clawdbot installed"
 }
